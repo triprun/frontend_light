@@ -1,26 +1,26 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
 
-function App() {
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+
+import Index from './components/Index/Index.jsx';
+import Login from './components/Login/Login.jsx';
+import Register from './components/Register/Register.jsx';
+import Profile from './components/Profile/Profile.jsx';
+
+const App = () => {
+
+  const isMobile = window.innerWidth < 1000;
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route exact path="/" component={ () => <Index isMobile={ isMobile } /> } />
+        <Route path="/signin" component={ () => <Login isMobile={ isMobile } /> } />
+        <Route path="/signup" component={ () => <Register isMobile={ isMobile } /> } />
+        <Route path="/profile" component={ () => <Profile isMobile={ isMobile } /> } />
+      </Switch>
+    </Router>
   );
-}
+};
 
 export default App;
