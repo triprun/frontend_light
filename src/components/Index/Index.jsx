@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { NavLink } from 'react-router-dom'
+
 import styled from 'styled-components';
 
 import { TripCard, FirstCard, LastCard } from './../Micro/TripCard.jsx';
@@ -175,8 +177,8 @@ const Index = (props) => {
               <Submit type="submit"><i className="fa fa-search"></i></Submit>
             </form>
           </Row>
-          <UnderText><small>Don't have an account? <a href="/signup">Register now.</a></small></UnderText>
-          <UnderText><small><a href="/signin">Log in</a> to access personal profile.</small></UnderText>
+          <UnderText><small>Don't have an account? <NavLink to="/signup">Register now.</NavLink></small></UnderText>
+          <UnderText><small><NavLink to="/signin">Log in</NavLink> to access personal profile.</small></UnderText>
         </Right>
       </Wrap>
       <Centered>

@@ -3,7 +3,6 @@
   "version": "0.3.1",
   "private": true,
   "dependencies": {
-    "@bit/sanzhardanybayev.ui-components.map": "^1.0.5",
     "moment": "^2.24.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
@@ -11,7 +10,6 @@
     "react-notifications": "^1.4.3",
     "react-router-dom": "^5.0.1",
     "react-scripts": "3.0.1",
-    "rxjs": "^6.5.2",
     "styled-components": "^4.3.2"
   },
   "scripts": {

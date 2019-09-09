@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { Redirect } from 'react-router-dom';
+import { Redirect, NavLink } from 'react-router-dom';
 
 import styled from 'styled-components';
 
@@ -18,7 +18,7 @@ const Wrap = styled.div`
   flex-wrap: nowrap;
   color: rgba(0,0,0,0.7);
 
-  a {
+  NavLink {
     text-decoration: none;
     color: #69BCD5;
   }
@@ -164,42 +164,28 @@ const Profile = (props) => {
   const [id] = useState(window.location.pathname.split('/')[2]);
 
   const profile = async () => {
-    if(id) {
-      const response = await fetch(`http://localhost:3030/user/profile/${id}`, {
-        method: 'GET',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        redirect: 'follow',
-        referrer: 'no-referrer'
-      });
-      const data = await response.json();
-      const code = data.statusCode || 200;
-      if(code === 200) return data;
-      return null;
-    } else {
-      const response = await fetch('http://localhost:3030/user/profile', {
-        method: 'POST',
-        mode: 'cors',
-        cache: 'no-cache',
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        redirect: 'follow',
-        referrer: 'no-referrer',
-        body: JSON.stringify({
-          accessToken: window.localStorage.getItem('access-token')
-        })
-      });
-      const data = await response.json();
-      const code = data.statusCode || 200;
-      if(code === 200) return data;
-      return null;
+    let url = 'http://85.143.216.19:3030/user/profile';
+    let config = {
+      method: 'GET',
+      mode: 'cors',
+      cache: 'no-cache',
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      redirect: 'follow',
+      referrer: 'no-referrer'
+    };
+    if(id) url = url + `/${id}`;
+    else config.headers = {
+      ...config.headers,
+      'Authorization': `Bearer ${window.localStorage.getItem('access-token')}`
     }
+    const response = await fetch(url, config);
+    const data = await response.json();
+    const code = data.statusCode || 200;
+    if(code === 200) return data;
+    return null;
   };
 
   useEffect(() => {
@@ -218,13 +204,13 @@ const Profile = (props) => {
       <Wrap>
         <Card>
           <CenterUsername>
-            { user.userName ? <a href="/profile">@{ user.userName }</a> :
-              !id ? <UsernameInput type="text" autocomplete="off" placeholder="Username" /> : <a href={`/profile/${window.location.pathname.split('/')[2]}`}>No username yet</a>
+            { user.userName ? <NavLink to="/profile">@{ user.userName }</NavLink> :
+              !id ? <UsernameInput type="text" autocomplete="off" placeholder="Username" /> : <NavLink to={`/profile/${window.location.pathname.split('/')[2]}`}>No username yet</NavLink>
             }
           </CenterUsername>
           <CircledAvatarBig src={ user.avatar || 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
           <br />
-          <a href="/">Update photo</a>
+          <NavLink to="/">Update photo</NavLink>
           <br />
           <hr />
           <ShortBio>23 y.o., Saint-Petersburg.<br />Been to 13 countries.</ShortBio>
@@ -248,7 +234,7 @@ const Profile = (props) => {
           <InnerColumn>
             <Marginer>
               <Welcome>Hi, I'm { user.firstName }!</Welcome>
-              <UnderWelc>Joined { moment(user.joined).format('MMM. DD, YYYY') } • <u>Travel map</u></UnderWelc>
+              <UnderWelc>Joined { moment(user.joined).format('MMM. DD, YYYY') } • <u><NavLink to="/plans">Travel map</NavLink></u></UnderWelc>
               <About>
                 <LQuote>“</LQuote>
                 <Quote>Traveller, software architect & developer, University drop-out full of dreams and courage.</Quote>

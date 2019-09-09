@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Redirect } from 'react-router-dom';
+import { Redirect, NavLink } from 'react-router-dom';
 
 import styled from 'styled-components';
 
@@ -66,7 +66,7 @@ const Submit = styled.input`
   cursor: pointer;
 `;
 
-const Link = styled.a`
+const Link = styled(NavLink)`
   text-decoration: none;
   color: #69BCD5;
 `;
@@ -84,7 +84,7 @@ const Login = (props) => {
   const send = async (e) => {
     e.preventDefault();
     if(!email || !password) return Manager.error('Please, fill all the required fields.', 'Error occured', 2000);
-    const response = await fetch('http://localhost:3030/auth/mail', {
+    const response = await fetch('http://85.143.216.19:3030/auth/mail', {
       method: 'POST',
       mode: 'cors',
       cache: 'no-cache',

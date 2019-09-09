@@ -6,6 +6,7 @@ import Index from './components/Index/Index.jsx';
 import Login from './components/Login/Login.jsx';
 import Register from './components/Register/Register.jsx';
 import Profile from './components/Profile/Profile.jsx';
+import Plans from './components/Plans/Plans.jsx';
 
 const App = () => {
 
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/signin" component={ () => <Login isMobile={ isMobile } /> } />
         <Route path="/signup" component={ () => <Register isMobile={ isMobile } /> } />
         <Route path="/profile" component={ () => <Profile isMobile={ isMobile } /> } />
+        <Route path="/plans" component={ () => <Plans isMobile={ isMobile } /> } />
       </Switch>
     </Router>
   );

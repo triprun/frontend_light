@@ -12,10 +12,25 @@ const FlagRounded = styled(Flag)`
   margin-right: 6px;
 `;
 
+const FlagCircled = styled(Flag)`
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  height: 45px;
+  width: 68px;
+  margin-top: 13px;
+  margin-right: 20px;
+`;
+
 const FlagIcon = (props) => {
   return (
     <FlagRounded { ...props } />
   );
 };
+
+export const FlagIconCircled = (props) => {
+  return (
+    <FlagCircled { ...props } />
+  );
+}
 
 export default FlagIcon;
