@@ -10,8 +10,13 @@ const Row = styled.div`
   flex-direction: row;
 `;
 
+const Column = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
 const Wrap = styled.div`
-  height: 300px;
+  height: 380px;
 `;
 
 const MiniCard = styled.div`
@@ -20,43 +25,55 @@ const MiniCard = styled.div`
   height: 200px;
 `;
 
+const MiniCardLong = styled.div`
+  width: 15vw;
+  min-width: 5vw;
+  height: 200px;
+`;
+
 const Card = styled.div`
   min-width: ${() => window.innerWidth < 1000 ? '370px' : '420px'};
   width: ${() => window.innerWidth < 1000 ? '370px' : '420px'};
   height: 200px;
-  border-radius: 5px;
   background: ${props => `linear-gradient( rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2) ), url(${props.source})`};
-  background: scale-down;
+  background-size: cover;
   position: relative;
   box-shadow: 1px 0 15px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
 `;
 
 const Info = styled.div`
-  width: 90%;
-  height: 140px;
-  border-radius: 5px;
-  transform: translate(-50%, 72%);
+  width: 98%;
+  height: 150px;
+  transform: translate(0%, 140%);
   position: absolute;
-  left: 50%;
+  left: 0%;
   transition: transform .2s;
   background: white;
-  padding: 10px;
-  box-shadow: 1px 0 15px rgba(0, 0, 0, 0.2);
+  padding-left: 5px;
+  padding-right: 5px;
+  /* box-shadow: 1px 0 15px rgba(0, 0, 0, 0.2); */
 
-  &:hover {
+  /* &:hover {
     cursor: pointer;
     transform: translate(-50%, 67%);
-  }
+  } */
 `;
 
 const MarchName = styled.h4`
   margin: 0;
-  margin-top: 40px;
 `;
 
 const Date = styled.small`
   color: rgba(70,70,70,0.6);
-  font-style: italic;
+  font-weight: bold;
+`;
+
+const Members = styled.small`
+  color: rgba(70,70,70,0.6);
+  font-weight: bold;
+  padding: 0;
+  margin: 0;
 `;
 
 const Destination = styled.p`
@@ -68,17 +85,22 @@ export const TripCard = (props) => {
     <Wrap>
       <Card source={ props.source } style={ props.style }>
         <Info>
-          <CircledAvatarRow
-            style={{ width: '100%', marginTop: '-70px', justifyContent: 'center' }}
-            sources={ ['https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/f/f8/Amelia_Pinney.jpg/revision/latest?cb=20151228165724', 'https://pbs.twimg.com/profile_images/763461232737210369/PFfZcFgn_400x400.jpg', 'https://pmctvline2.files.wordpress.com/2018/04/lucifer-season-3-episode-21.jpg?w=620'] }
-          />
-          <br />
-          <MarchName>{ props.name }</MarchName>
-          <Date>{ props.dates }</Date>
-          <br />
-          <Row>
-            <FlagIcon code={ props.code } size="3x" squared={ false } />
-            <Destination>{ props.city }</Destination>
+          <Row style={{ justifyContent: 'space-between' }}>
+            <Column>
+              <Row><Date>{ props.dates }</Date></Row>
+              <MarchName>{ props.name }</MarchName>
+              <Row>
+                <FlagIcon code={ props.code } size="3x" squared={ false } />
+                <Destination>{ props.city }</Destination>
+              </Row>
+            </Column>
+            <Column>
+              <Row><Members>Plan members:</Members></Row>
+              <CircledAvatarRow
+                style={{ width: '100%', marginTop: '-25%', justifyContent: 'flex-end' }}
+                sources={ ['https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/f/f8/Amelia_Pinney.jpg/revision/latest?cb=20151228165724', 'https://pbs.twimg.com/profile_images/763461232737210369/PFfZcFgn_400x400.jpg', 'https://pmctvline2.files.wordpress.com/2018/04/lucifer-season-3-episode-21.jpg?w=620'] }
+              />
+            </Column>
           </Row>
         </Info>
       </Card>
@@ -90,6 +112,14 @@ export const LastCard = () => {
   return (<MiniCard></MiniCard>);
 };
 
+export const LastCardLong = () => {
+  return (<MiniCardLong></MiniCardLong>);
+};
+
 export const FirstCard = () => {
   return (<MiniCard></MiniCard>);
+};
+
+export const FirstCardLong = () => {
+  return (<MiniCardLong></MiniCardLong>);
 };

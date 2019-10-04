@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { Redirect, NavLink } from 'react-router-dom';
 
 import styled from 'styled-components';
 
 import { Manager, Notification } from './../Micro/Notifications.jsx';
+
+import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
 
 import background from './background.jpg';
 
@@ -77,38 +79,82 @@ const Small = styled.small`
 `;
 
 const Login = (props) => {
+  const [state, setState] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authenticated, setAuth] = useState(false);
+  const [buttonClicked, setButtonClicked] = useState(false);
+  const [inputFieldsReady, setInputFieldsReady] = useState(false);
 
-  const send = async (e) => {
-    e.preventDefault();
-    if(!email || !password) return Manager.error('Please, fill all the required fields.', 'Error occured', 2000);
-    const response = await fetch('http://85.143.216.19:3030/auth/mail', {
-      method: 'POST',
-      mode: 'cors',
-      cache: 'no-cache',
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      redirect: 'follow',
-      referrer: 'no-referrer',
-      body: JSON.stringify({
-        email: email,
-        password: password
-      })
+  // const send = async (e) => {
+  //   e.preventDefault();
+  //   if(!email || !password) return Manager.error('Please, fill all the required fields.', 'Error occured', 2000);
+  //   const response = await fetch('https://85.143.216.19:3030/auth/mail', {
+  //     method: 'POST',
+  //     mode: 'cors',
+  //     cache: 'no-cache',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'Access-Control-Allow-Origin': '*'
+  //     },
+  //     redirect: 'follow',
+  //     referrer: 'no-referrer',
+  //     body: JSON.stringify({
+  //       email: email,
+  //       password: password
+  //     })
+  //   });
+  //   const body = await response.json();
+  //   const code = body.statusCode || 200;
+  //   if(code !== 200) return Manager.warning('Invalid e-mail and/or password. Try again, or contact support.', 'Error occured', 2000);
+  //   Manager.success('You will be redirected in a few seconds', 'Success!', 2000);
+  //   window.localStorage.setItem('access-token', body.accessToken);
+  //   window.localStorage.setItem('access-token-expires', body.accessTokenExpireAt);
+  //   window.localStorage.setItem('refresh-token', body.refreshToken);
+  //   window.localStorage.setItem('refresh-token-expires', body.refreshTokenExpireAt);
+  //   setTimeout(() => { setAuth(true); }, 3000);
+  // };
+
+  useEffect(() => {
+    fetch(jsonstoreurl).then(res => res.json()).then(data => {
+      console.log(data.result);
+      setState(data.result);
     });
-    const body = await response.json();
-    const code = body.statusCode || 200;
-    if(code !== 200) return Manager.warning('Invalid e-mail and/or password. Try again, or contact support.', 'Error occured', 2000);
-    Manager.success('You will be redirected in a few seconds', 'Success!', 2000);
-    window.localStorage.setItem('access-token', body.accessToken);
-    window.localStorage.setItem('access-token-expires', body.accessTokenExpireAt);
-    window.localStorage.setItem('refresh-token', body.refreshToken);
-    window.localStorage.setItem('refresh-token-expires', body.refreshTokenExpireAt);
-    setTimeout(() => { setAuth(true); }, 3000);
+  }, []);
+
+  useEffect(() => {
+    if(!state) setState({
+      plans: [],
+      users: []
+    });
+  }, [state]);
+
+  const handleClick = e => {
+    e.preventDefault();
+    setButtonClicked(true);
   };
+
+  useEffect(() => {
+    if(!buttonClicked) return;
+    if(!email || !password) {
+      setButtonClicked(false);
+      return Manager.error('Please, fill all fields.', 'Error occured', 2000);
+    }
+    setInputFieldsReady(true);
+  }, [buttonClicked]);
+
+  useEffect(() => {
+    if(!inputFieldsReady) return;
+    const user = state.users.filter(user => (user.email === email || user.username === email) && user.password === password);
+    if(!user[0]) {
+      setButtonClicked(false);
+      setInputFieldsReady(false);
+      return Manager.warning('Username and/or password incorrect', 'Error occured', 2000);
+    }
+    Manager.success('You will be redirected in a few seconds', 'Success!', 2000);
+    window.localStorage.setItem('username', email);
+    setTimeout(() => { setAuth(true); }, 3000);
+  }, [inputFieldsReady]);
 
   return (
     authenticated ? <Redirect to={{ pathname: "/profile" }} /> : (
@@ -118,8 +164,8 @@ const Login = (props) => {
           <Center>
             <Input type="text" value={ email } placeholder="Username or E-mail" onChange={ (e) => { setEmail(e.target.value) } } />
             <Input type="password" value={ password } placeholder="Password" onChange={ (e) => { setPassword(e.target.value) } } />
-            <Submit type="submit" value="Sign In" onClick={ send } />
-            <Small>Don't have an account? <Link href="/sigup">Register now.</Link></Small>
+            <Submit type="submit" value="Sign In" onClick={ handleClick } />
+            <Small>Don't have an account? <Link to="/sigup">Register now.</Link></Small>
           </Center>
         </LoginForm>
         <Notification />

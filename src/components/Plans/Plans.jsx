@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-import { Redirect } from 'react-router-dom';
+import { Redirect, NavLink } from 'react-router-dom';
 
 import styled from 'styled-components';
 
 import moment from 'moment';
 
 import { CircledAvatarSimple } from './../Micro/CircledAvatar.jsx';
+import { CityTimeFilter } from './../Micro/CityTimeFilter.jsx';
 
 import { FlagIconCircled } from './../FlagIcon/FlagIcon';
 
@@ -33,15 +34,16 @@ const Column = styled.div`
 `;
 
 const LeftColumn = styled(Column)`
-  flex: 9;
+  flex: 4;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   z-index: 2;
 `;
 
 const RightColumn = styled(Column)`
-  flex: 11;
+  flex: 12;
   background: rgb(244,245,248);
   z-index: 1;
+  overflow: scroll;
 `;
 
 const InnerColumn = styled(Column)`
@@ -144,13 +146,13 @@ const UsernameInput = styled.input`
 `;
 
 const ChatButton = styled.div`
-  padding: 6px 6px;
+  padding: 8px 27px;
   background: rgb(81, 110, 236);
   color: white;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 24px;
   font-size: 10pt;
-  width: 60%;
+  cursor: pointer;
 `;
 
 const DownloadButton = styled.div`
@@ -162,6 +164,163 @@ const DownloadButton = styled.div`
   border-radius: 4px;
 `;
 
+const TODOCircle = styled.div`
+  width: 8px;
+  height: 8px;
+  margin-left: 13px;
+  margin-right: 13px;
+  border-radius: 50px;
+  background: ${ props => props.background };
+  opacity: 0.7;
+`;
+
+const FileIcon = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  background: skyblue;
+  opacity: 0.6;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  color: blue;
+  cursor: pointer;
+`;
+
+const Filename = styled.h3`
+  margin: 0;
+  padding: 0;
+  font-size: 12pt;
+  font-weight: normal;
+`;
+
+const Filedesc = styled.small`
+  margin: 0;
+  padding: 0;
+  font-size: 8pt;
+  color: rgba(0,0,0,0.5);
+`;
+
+const PlaceTypes = styled.div`
+  width: 90%;
+  height: 70px;
+  background: white;
+  border-radius: 12px;
+  padding-left: 3%;
+  padding-right: 3%;
+  margin-left: 2%;
+  margin-top: 1%;
+  box-shadow: 0 0 9px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
+const PlaceItems = styled.div`
+  width: 90%;
+  min-height: 85%;
+  background: white;
+  border-radius: 5px;
+  padding-left: 3%;
+  padding-right: 3%;
+  margin-left: 2%;
+  margin-top: 1%;
+  box-shadow: 0 0 9px rgba(0,0,0,0.1);
+`;
+
+const PlaceItem = styled.div`
+  width: 100%;
+  margin-left: 2%;
+  height: 240px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const TextSide = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  flex: 5;
+`;
+
+const ImageSide = styled.div`
+  display: flex;
+  flex: 3;
+`;
+
+const ImageSideImage = styled.img`
+  width: 100%;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+`;
+
+const countries = [
+  {
+    name: 'Spain',
+    flag: 'sp',
+    cities: [
+      {
+        name: 'Barcelona',
+        arrival: '13 aug',
+        departure: '15 aug',
+        places: [{
+          type: 'Restaurant',
+          name: 'BBQ Inn, Meat-o-rant',
+          arrival: '12 pm',
+          open: '10 am',
+          close: '7 pm',
+          menu: 'link',
+          address: 'Nou de San Francesc 7',
+          comments: [],
+          image: 'https://tomesto.ru/img/place/000/022/585/restoran-brisket-bbq-brisket-na-smolenskom-bulvare_8e6c9_full-128780.jpg'
+        }, {
+          type: 'Sightseeing',
+          name: 'Kirche Sigrada Familia Barcelonar',
+          arrival: '2 pm',
+          open: null,
+          close: null,
+          menu: null,
+          address: 'Nou de Capitol',
+          comments: [],
+          image: 'https://media.tacdn.com/media/attractions-splice-spp-674x446/06/6f/5d/13.jpg'
+        }, {
+          type: 'Sightseeing',
+          name: 'Barcelona Casa Batlo',
+          arrival: '4 pm',
+          open: null,
+          close: null,
+          menu: null,
+          address: 'Nou de Capitol',
+          comments: [],
+          image: 'https://cdn02.visitbarcelona.com/files/5531-3973-imagenCAT/BarcelonaGaudi-T24-d_O.jpg'
+        }, {
+          type: 'Restaurant',
+          name: 'Shisha palace, Shisha bar',
+          arrival: '6 pm',
+          open: '2 pm',
+          close: '01 am',
+          menu: 'link',
+          address: 'Nou de San Francesc 7',
+          comments: [],
+          image: 'https://media-cdn.tripadvisor.com/media/photo-s/04/b4/5f/2d/mono-shisha-bar.jpg'
+        }]
+      }
+    ]
+  }
+]
+
+const RestaurantIcon = () => (<i style={{ color: '#FF4040' }} className="fas fa-utensils"></i>)
+const SightseeingIcon = () => (<i style={{ color: '#32CD32' }} className="fas fa-monument"></i>)
+const HotelIcon = () => (<i style={{ color: '#1AA3FF' }} className="fas fa-bed"></i>)
+const PhotoplaceIcon = () => (<i style={{ color: '#6E7074' }} className="fas fa-camera-retro"></i>)
+const FavouriteIcon = () => (<i style={{ color: '#FFBF00' }} className="fas fa-star"></i>)
+const NewplaceIcon = () => (<i style={{ color: '#7EBCA1' }} className="fas fa-plus-circle"></i>)
+
 const Profile = (props) => {
 
   const [loading, setLoading] = useState(false);
@@ -170,7 +329,7 @@ const Profile = (props) => {
   // const [id] = useState(window.location.pathname.split('/')[2]);
 
   // const profile = async () => {
-  //   let url = 'http://85.143.216.19:3030/user/profile';
+  //   let url = 'https://85.143.216.19:3030/user/profile';
   //   let config = {
   //     method: 'GET',
   //     mode: 'cors',
@@ -209,9 +368,10 @@ const Profile = (props) => {
       <Wrap>
         <LeftColumn>
           <InnerColumn>
-            <Row style={{ width: '80%', marginTop: 60, marginLeft: '8%' }}>
+            <span style={{ color: 'skyblue', paddingTop: '15px', marginLeft: '8%' }}><NavLink to="/" style={{ textDecoration: 'none', color: 'skyblue' }}>{ '<–– Назад' }</NavLink></span>
+            <Row style={{ width: '80%', marginTop: 20, marginLeft: '8%' }}>
               <Column>
-                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>13 august – 24 august</p>
+                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>13 август – 24 август</p>
                 <h1 style={{ margin: 0, marginTop: 16, fontSize: '36pt' }}>Eurotrip</h1>
                 <Row>
                   <FlagIconCircled code='gb' />
@@ -219,92 +379,195 @@ const Profile = (props) => {
                   <FlagIconCircled code='pl' />
                 </Row>
               </Column>
-              <Column>
-                <Column>
-                  <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)', textAlign: 'right' }}>Trip members:</p>
-                  <Row style={{ paddingTop: 15, marginLeft: 18, justifyContent: 'flex-end' }}>
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                  </Row>
-                  <Row style={{ justifyContent: 'flex-end', marginLeft: 18 }}>
-                    <ChatButton>
-                      Открыть Чат
-                    </ChatButton>
-                  </Row>
-                </Column>
-              </Column>
             </Row>
             <About style={{ width: '80%', marginTop: 5, marginLeft: '8%', color: 'rgba(0,0,0,0.5)' }}>
               <LQuote>“</LQuote>
-              <Quote>A short description of a trip that is being planned, so every newcomer (freshmen) might understand what kind of trip they join.</Quote>
+              <Quote>Краткое описание к планам, чтобы пользователи могли быстро ознакомиться с предстоящим путешествием до просмотра мест.</Quote>
               <RQuote>”</RQuote>
             </About>
-            <Row style={{ width: '80%', marginTop: 5, marginLeft: '8%' }}>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Длительность</p>
-                <p style={{ margin: 0 }}>3 дня</p>
-              </Column>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Страны и города</p>
-                <p style={{ margin: 0 }}>Москва, Киев, Пекин, Токио</p>
-              </Column>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Включено</p>
-                <p style={{ margin: 0 }}>Отель, Транспорт, Обед</p>
-              </Column>
-            </Row>
-            <br />
-            <br />
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
+            <Column>
+              <p style={{ margin: 0, marginLeft: '-32px', color: 'rgba(0,0,0,0.5)', textAlign: 'center' }}>Участники путешествия:</p>
+              <Row style={{ paddingTop: 10, justifyContent: 'center' }}>
+                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
+                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
+                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
+                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
+              </Row>
+              <Row style={{ justifyContent: 'center' }}>
+                <ChatButton>
+                  Добавить
+                </ChatButton>
+              </Row>
             </Column>
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
-            </Column>
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
+            {
+              // <Row style={{ width: '80%', marginTop: 5, marginLeft: '8%' }}>
+              //   <Column>
+              //     <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Страны и города</p>
+              //     <p style={{ margin: 0 }}>Москва, Киев, Пекин, Токио</p>
+              //   </Column>
+              // </Row>
+              // <br />
+              // <br />
+            }
+            <Column>
+
+              <table style={{ width: '90%', marginLeft: '5%' }}>
+                <tbody>
+                  <tr>
+                    <td><h3>TODO Лист</h3></td>
+                  </tr>
+                  <tr>
+                    <td>Собрать вещи</td>
+                    <td><TODOCircle background="green" /></td>
+                    <td>Готово</td>
+                  </tr>
+                  <tr>
+                    <td>Выбрать гостиницу</td>
+                    <td><TODOCircle background="orange" /></td>
+                    <td>В процессе</td>
+                  </tr>
+                  <tr>
+                    <td>Купить фетровое пальто</td>
+                    <td><TODOCircle background="red" /></td>
+                    <td>Срочно</td>
+                  </tr>
+                  <tr>
+                    <td>Взять с собой книгу</td>
+                    <td><TODOCircle background="skyblue" /></td>
+                    <td>Не забыть</td>
+                  </tr>
+                </tbody>
+              </table>
+              <table style={{ width: '90%', marginLeft: '5%' }}>
+                <tbody>
+                  <tr>
+                    <td><h3>Файлы</h3></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Document #1</Filename><Filedesc>This is my own passport, don't forget!!!</Filedesc></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Passport copy</Filename><Filedesc>This is my second passport copy just in case lol</Filedesc></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Tickets</Filename><Filedesc>Our tickets for a flight there-n-back</Filedesc></td>
+                  </tr>
+                </tbody>
+              </table>
             </Column>
           </InnerColumn>
         </LeftColumn>
         <RightColumn>
+          {
+            // <InnerColumn>
+            //   <Column>
+            //     <Row style={{ width: '90%', marginLeft: '5%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
+            //       <Row style={{ justifyContent: 'flex-start', marginTop: 15, marginBottom: 3 }}>
+            //         <p style={{ marginRight: 20, cursor: 'pointer', color: 'rgb(0, 158, 218)' }}>Tab 1</p>
+            //         <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 2</p>
+            //         <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 3</p>
+            //       </Row>
+            //     </Row>
+            //     { /* continue here */ }
+            //   </Column>
+            // </InnerColumn>
+          }
           <InnerColumn>
-            <Column>
-              <Row style={{ width: '90%', marginLeft: '5%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                <Row style={{ justifyContent: 'flex-start', marginTop: 15, marginBottom: 3 }}>
-                  <p style={{ marginRight: 20, cursor: 'pointer', color: 'rgb(0, 158, 218)' }}>Tab 1</p>
-                  <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 2</p>
-                  <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 3</p>
-                </Row>
+            <PlaceTypes>
+              <Row>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Все места</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Отели</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Рестораны</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Достопримечательности</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Места для фото</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Избранные</h4>
+                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Мои места</h4>
               </Row>
-              { /* continue here */ }
-            </Column>
+            </PlaceTypes>
+            <PlaceItems>
+              <h3>Барселона, Испания</h3>
+              <Row style={{ width: '100%' }}>
+                <CityTimeFilter days={[{
+                  date: '13 august',
+                  wname: 'Monday'
+                }, {
+                  date: '14 august',
+                  wname: 'Tuesday'
+                }]} />
+                <Column style={{ width: '85%' }}>
+                  <PlaceItem>
+                    <TextSide>
+                      <small style={{ color: 'grey' }}><RestaurantIcon /> Ресторан</small>
+                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>BBQ inn, Meat-o-rant</h2>
+                      <small style={{ color: 'grey' }}>В 12:00 | Открыто: 10:00 - 19:00 | Меню</small>
+                      <br />
+                      <small style={{ color: 'grey' }}>Адрес: Nou de San Francesc 7</small>
+                      <br />
+                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                    </TextSide>
+                    <ImageSide>
+                      <ImageSideImage src="https://tomesto.ru/img/place/000/022/585/restoran-brisket-bbq-brisket-na-smolenskom-bulvare_8e6c9_full-128780.jpg" />
+                    </ImageSide>
+                  </PlaceItem>
+                  <br />
+                  <br />
+                  <PlaceItem>
+                    <TextSide>
+                      <small style={{ color: 'grey' }}><SightseeingIcon /> Достопримечательность</small>
+                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Kirche Sigrada Familia Barcelonar</h2>
+                      <small style={{ color: 'grey' }}>В 14:00 | Открыто: 14:00 - 01:00 | Меню</small>
+                      <br />
+                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
+                      <br />
+                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                    </TextSide>
+                    <ImageSide>
+                      <ImageSideImage src="https://media.tacdn.com/media/attractions-splice-spp-674x446/06/6f/5d/13.jpg" />
+                    </ImageSide>
+                  </PlaceItem>
+                  <br />
+                  <br />
+                  <PlaceItem>
+                    <TextSide>
+                      <small style={{ color: 'grey' }}><SightseeingIcon /> Достопримечательность</small>
+                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Barcelona Casa Batlo</h2>
+                      <small style={{ color: 'grey' }}>В 16:00 | Открыто: 14:00 - 01:00 | Меню</small>
+                      <br />
+                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
+                      <br />
+                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                    </TextSide>
+                    <ImageSide>
+                      <ImageSideImage src="https://cdn02.visitbarcelona.com/files/5531-3973-imagenCAT/BarcelonaGaudi-T24-d_O.jpg" />
+                    </ImageSide>
+                  </PlaceItem>
+                  <br />
+                  <br />
+                  <PlaceItem>
+                    <TextSide>
+                      <small style={{ color: 'grey' }}><RestaurantIcon /> Ресторан</small>
+                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Shisha palace, Shisha bar</h2>
+                      <small style={{ color: 'grey' }}>В 18:00 | Открыто: 14:00 - 01:00 | Меню</small>
+                      <br />
+                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
+                      <br />
+                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                    </TextSide>
+                    <ImageSide>
+                      <ImageSideImage src="https://media-cdn.tripadvisor.com/media/photo-s/04/b4/5f/2d/mono-shisha-bar.jpg" />
+                    </ImageSide>
+                  </PlaceItem>
+                </Column>
+              </Row>
+              <br />
+              <br />
+            </PlaceItems>
           </InnerColumn>
+          <br />
+          <br />
         </RightColumn>
       </Wrap>
     )

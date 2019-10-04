@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { TripCard, FirstCard, LastCard } from './../Micro/TripCard.jsx';
 import { NewsPost } from './../Micro/NewsPost.jsx';
 import { TwoSideColumns } from './../Micro/TwoSideColumns.jsx';
+import { HeadMenu } from './../Micro/HeadMenu.jsx';
 
 import logo from './logo.jpg';
 import seashore from './left.jpg';
@@ -164,7 +165,7 @@ const Stars = (props) => {
 const Index = (props) => {
   return (
     <>
-      <Logo src={ logo } />
+      <HeadMenu />
       <Down src={ scroll } />
       <Wrap>
         <Left { ...props } src={ seashore } />
@@ -212,7 +213,7 @@ const Index = (props) => {
             </Box>
             <LastCard />
           </ScrollRow>
-          <h1>Popular marschroutes:</h1>
+          <h1>Popular trips:</h1>
           <ScrollRow style={{ width: '100vw', marginLeft: '-5vw' }}>
             <FirstCard />
             <TripCard
