@@ -274,7 +274,8 @@ const Profile = (props) => {
       plans: [],
       users: []
     });
-    const found = state.users.filter(user => user.username === window.localStorage.getItem('username'));
+    const split = window.location.href.split('/');
+    const found = state.users.filter(user => user.username === (split[split.length - 1] === 'profile' ? window.localStorage.getItem('username') : split[split.length - 1]));
     if(!found) unauthorize(true);
     setUser(found[0]);
     setTimeout(() => {
@@ -350,7 +351,7 @@ const Profile = (props) => {
         <Wrap>
           <Card>
             <CenterUsername>
-              { user.username ? <NavLink to="/profile">@{ user.username }</NavLink> :
+              { user.username ? <NavLink to={ `/profile/${user.username}` }>@{ user.username }</NavLink> :
                 !id ? <UsernameInput id="username" type="text" autocomplete="off" placeholder="Username" onChange={handleUsername} /> : <NavLink to={`/profile/${window.location.pathname.split('/')[2]}`}>No username yet</NavLink>
               }
             </CenterUsername>

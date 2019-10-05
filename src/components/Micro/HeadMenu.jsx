@@ -4,6 +4,8 @@ import styled from 'styled-components';
 
 import { NavLink } from 'react-router-dom';
 
+import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+
 import { CircledAvatarSimple } from './../Micro/CircledAvatar.jsx';
 
 const MenuLine = styled.div`
@@ -39,11 +41,38 @@ const LinkText = styled.p`
 
 export const HeadMenu = (props) => {
   const [unauthorized, unauthorize] = useState(false);
+  const [okay, setOkay] = useState(false);
+  const [state, setState] = useState(null);
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('username');
-    if(!token) unauthorize(true);
+    if(!token) return unauthorize(true);
+    setOkay(true);
   }, []);
+
+  useEffect(() => {
+    if(!okay) return;
+    fetch(jsonstoreurl).then(res => res.json()).then(data => {
+      setState(data.result);
+      setTimeout(() => {
+        setStateUpdated(true);
+      }, 100);
+    });
+  }, [okay]);
+
+  useEffect(() => {
+    if(!stateUpdated) return;
+    if(!state) return setState({
+      plans: [],
+      users: []
+    });
+    const split = window.location.href.split('/');
+    const found = state.users.filter(user => user.username === window.localStorage.getItem('username'));
+    if(!found) unauthorize(true);
+    setUser(found[0]);
+  }, [stateUpdated]);
 
   return (
     unauthorized ? <></> : <MenuLine>
@@ -51,7 +80,7 @@ export const HeadMenu = (props) => {
         <Link to="/"><LinkText>Home</LinkText></Link>
         <Link to="/plans"><LinkText>My Plans</LinkText></Link>
         <Link to="/profile">
-          <CircledAvatarSimple src={ props.avatar || 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
+          <CircledAvatarSimple src={ user ? user.avatar : 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
           </Link>
       </Menu>
     </MenuLine>

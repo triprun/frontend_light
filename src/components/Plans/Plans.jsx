@@ -6,6 +6,8 @@ import styled from 'styled-components';
 
 import moment from 'moment';
 
+import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+
 import { CircledAvatarSimple } from './../Micro/CircledAvatar.jsx';
 import { CityTimeFilter } from './../Micro/CityTimeFilter.jsx';
 
@@ -17,6 +19,16 @@ const Wrap = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  justify-content: center;
+`;
+
+const WrapCentered = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Row = styled.div`
@@ -259,10 +271,57 @@ const ImageSideImage = styled.img`
   border-bottom-right-radius: 12px;
 `;
 
+const AddMemberBar = styled.div`
+  position: absolute;
+  width: 40vw;
+  height: 5vh;
+  margin-top: 47.5vh;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
+
+const AddMemberInput = styled.input`
+  height: 3vh;
+  width: 30vw;
+  font-size: 18pt;
+  border: none;
+  outline: none;
+`;
+
+const AddMemberButton = styled.div`
+  width: 7vw;
+  height: 3vh;
+  border-radius: 30px;
+  background: rgb(81, 110, 236);
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 1vw;
+`;
+
+const CloseAddMember = styled.small`
+  margin-top: -2.5vh;
+  cursor: pointer;
+  color: rgba(0,0,0,0.3);
+`;
+
 const countries = [
   {
     name: 'Spain',
     flag: 'sp',
+    members: [
+      {
+        id: 'rmnff'
+      }
+    ],
     cities: [
       {
         name: 'Barcelona',
@@ -321,12 +380,86 @@ const PhotoplaceIcon = () => (<i style={{ color: '#6E7074' }} className="fas fa-
 const FavouriteIcon = () => (<i style={{ color: '#FFBF00' }} className="fas fa-star"></i>)
 const NewplaceIcon = () => (<i style={{ color: '#7EBCA1' }} className="fas fa-plus-circle"></i>)
 
-const Profile = (props) => {
+const fetchFromType = (type) => {
+  switch(type) {
+    case 'Restaurant':
+      return <RestaurantIcon />
+    case 'Sightseeing':
+      return <SightseeingIcon />
+    case 'Hotel':
+      return <HotelIcon />
+    case 'Photoplace':
+      return <PhotoplaceIcon />
+    case 'Favourite':
+      return <FavouriteIcon />
+    default:
+      break;
+  }
+}
 
-  const [loading, setLoading] = useState(false);
+const Plans = (props) => {
+
+  const [loading, setLoading] = useState(true);
   // const [user, setUser] = useState(null);
   const [unauthorized, unauthorize] = useState(false);
   // const [id] = useState(window.location.pathname.split('/')[2]);
+  const [fetchedPlan, setPlan] = useState(null);
+  const [state, setState] = useState(null);
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [selectedCity, setSelectedCity] = useState(0);
+  const [addMemberSelected, setAddMemberSelected] = useState(false);
+
+  useEffect(() => {
+    fetch(jsonstoreurl).then(res => res.json()).then(data => {
+      setState(data.result);
+      setTimeout(() => {
+        setStateUpdated(true);
+      }, 100);
+    });
+  }, []);
+
+  useEffect(() => {
+    if(!stateUpdated) return;
+    const self = window.localStorage.getItem('username')[0];
+    const fetched = state.plans.map(plan => {
+      if(plan.members.filter(member => member.id === self)) {
+        return plan
+      } else {
+        return null
+      }
+    })[0];
+    setPlan(fetched);
+  }, [stateUpdated]);
+
+  useEffect(() => {
+    if(!fetchedPlan) return;
+    setLoading(false);
+  }, [fetchedPlan]);
+
+  const handleAddMember = (e) => {
+    e.preventDefault();
+    setAddMemberSelected(!addMemberSelected);
+  };
+
+  const fetchUserAndAdd = (e) => {
+    e.preventDefault();
+    const input = document.getElementById('memberUsername').value;
+    const self = window.localStorage.getItem('username');
+    const alreadyMember = state.plans[0].members.filter(member => member.id === input)[0];
+    if(input === self || alreadyMember) return;
+    const found = state.users.filter(user => user.username === input)[0];
+    if(!found) return;
+    state.plans[0].members = state.plans[0].members.concat({ id: input });
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    fetch(jsonstoreurl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(state)
+    }).then(response => response.json()).then(data => {
+      console.log(data);
+    });
+  }
 
   // const profile = async () => {
   //   let url = 'https://85.143.216.19:3030/user/profile';
@@ -364,7 +497,9 @@ const Profile = (props) => {
   // }, [user]);
 
   return(
-    unauthorized ? <Redirect to={{ pathname: '/signin' }} /> : loading ? <Wrap></Wrap> : (
+    unauthorized ? <Redirect to={{ pathname: '/signin' }} /> : loading ? <WrapCentered>
+      <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" style={{ width: '110px' }} />
+    </WrapCentered> : (
       <Wrap>
         <LeftColumn>
           <InnerColumn>
@@ -388,29 +523,23 @@ const Profile = (props) => {
             <Column>
               <p style={{ margin: 0, marginLeft: '-32px', color: 'rgba(0,0,0,0.5)', textAlign: 'center' }}>Участники путешествия:</p>
               <Row style={{ paddingTop: 10, justifyContent: 'center' }}>
-                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
+                { fetchedPlan.members.map(member => {
+                    const user = state.users.filter(user => user.username === member.id)[0];
+                    return (
+                      <NavLink to={ `/profile/${user.username}` }>
+                        <CircledAvatarSimple src={ user.avatar || 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
+                      </NavLink>
+                    );
+                  })
+                }
               </Row>
               <Row style={{ justifyContent: 'center' }}>
-                <ChatButton>
+                <ChatButton onClick={ handleAddMember }>
                   Добавить
                 </ChatButton>
               </Row>
             </Column>
-            {
-              // <Row style={{ width: '80%', marginTop: 5, marginLeft: '8%' }}>
-              //   <Column>
-              //     <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Страны и города</p>
-              //     <p style={{ margin: 0 }}>Москва, Киев, Пекин, Токио</p>
-              //   </Column>
-              // </Row>
-              // <br />
-              // <br />
-            }
             <Column>
-
               <table style={{ width: '90%', marginLeft: '5%' }}>
                 <tbody>
                   <tr>
@@ -488,7 +617,7 @@ const Profile = (props) => {
               </Row>
             </PlaceTypes>
             <PlaceItems>
-              <h3>Барселона, Испания</h3>
+              <h3>{ fetchedPlan.cities[selectedCity].name }</h3>
               <Row style={{ width: '100%' }}>
                 <CityTimeFilter days={[{
                   date: '13 august',
@@ -498,68 +627,29 @@ const Profile = (props) => {
                   wname: 'Tuesday'
                 }]} />
                 <Column style={{ width: '85%' }}>
-                  <PlaceItem>
-                    <TextSide>
-                      <small style={{ color: 'grey' }}><RestaurantIcon /> Ресторан</small>
-                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>BBQ inn, Meat-o-rant</h2>
-                      <small style={{ color: 'grey' }}>В 12:00 | Открыто: 10:00 - 19:00 | Меню</small>
-                      <br />
-                      <small style={{ color: 'grey' }}>Адрес: Nou de San Francesc 7</small>
-                      <br />
-                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
-                    </TextSide>
-                    <ImageSide>
-                      <ImageSideImage src="https://tomesto.ru/img/place/000/022/585/restoran-brisket-bbq-brisket-na-smolenskom-bulvare_8e6c9_full-128780.jpg" />
-                    </ImageSide>
-                  </PlaceItem>
-                  <br />
-                  <br />
-                  <PlaceItem>
-                    <TextSide>
-                      <small style={{ color: 'grey' }}><SightseeingIcon /> Достопримечательность</small>
-                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Kirche Sigrada Familia Barcelonar</h2>
-                      <small style={{ color: 'grey' }}>В 14:00 | Открыто: 14:00 - 01:00 | Меню</small>
-                      <br />
-                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
-                      <br />
-                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
-                    </TextSide>
-                    <ImageSide>
-                      <ImageSideImage src="https://media.tacdn.com/media/attractions-splice-spp-674x446/06/6f/5d/13.jpg" />
-                    </ImageSide>
-                  </PlaceItem>
-                  <br />
-                  <br />
-                  <PlaceItem>
-                    <TextSide>
-                      <small style={{ color: 'grey' }}><SightseeingIcon /> Достопримечательность</small>
-                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Barcelona Casa Batlo</h2>
-                      <small style={{ color: 'grey' }}>В 16:00 | Открыто: 14:00 - 01:00 | Меню</small>
-                      <br />
-                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
-                      <br />
-                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
-                    </TextSide>
-                    <ImageSide>
-                      <ImageSideImage src="https://cdn02.visitbarcelona.com/files/5531-3973-imagenCAT/BarcelonaGaudi-T24-d_O.jpg" />
-                    </ImageSide>
-                  </PlaceItem>
-                  <br />
-                  <br />
-                  <PlaceItem>
-                    <TextSide>
-                      <small style={{ color: 'grey' }}><RestaurantIcon /> Ресторан</small>
-                      <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>Shisha palace, Shisha bar</h2>
-                      <small style={{ color: 'grey' }}>В 18:00 | Открыто: 14:00 - 01:00 | Меню</small>
-                      <br />
-                      <small style={{ color: 'grey' }}>Адрес: Nou de Capitol</small>
-                      <br />
-                      <small style={{ color: 'skyblue' }}>Комментарии...</small>
-                    </TextSide>
-                    <ImageSide>
-                      <ImageSideImage src="https://media-cdn.tripadvisor.com/media/photo-s/04/b4/5f/2d/mono-shisha-bar.jpg" />
-                    </ImageSide>
-                  </PlaceItem>
+                  { fetchedPlan.cities[selectedCity].places.map(place => {
+                      return (
+                        <>
+                          <PlaceItem>
+                            <TextSide>
+                              <small style={{ color: 'grey' }}>{ fetchFromType(place.type) } { place.type }</small>
+                              <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>BBQ inn, Meat-o-rant</h2>
+                              <small style={{ color: 'grey' }}>В { place.arrival } | Открыто: { place.open } - { place.close } | Меню</small>
+                              <br />
+                              <small style={{ color: 'grey' }}>Адрес: { place.address }</small>
+                              <br />
+                              <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                            </TextSide>
+                            <ImageSide>
+                              <ImageSideImage src={ place.image } />
+                            </ImageSide>
+                          </PlaceItem>
+                          <br />
+                          <br />
+                        </>
+                      );
+                    })
+                  }
                 </Column>
               </Row>
               <br />
@@ -569,9 +659,14 @@ const Profile = (props) => {
           <br />
           <br />
         </RightColumn>
+        <AddMemberBar style={{ display: addMemberSelected ? 'flex' : 'none' }}>
+          <AddMemberInput id="memberUsername" type="text" placeholder="Введите юзернейм пользователя" />
+          <AddMemberButton onClick={ fetchUserAndAdd } >Добавить</AddMemberButton>
+          <CloseAddMember onClick={ handleAddMember }>x</CloseAddMember>
+        </AddMemberBar>
       </Wrap>
     )
   );
 };
 
-export default Profile;
+export default Plans;
