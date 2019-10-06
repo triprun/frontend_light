@@ -313,15 +313,21 @@ const CloseAddMember = styled.small`
   color: rgba(0,0,0,0.3);
 `;
 
-const countries = [
-  {
+const plans = [{
+  name: 'Eurotrip',
+  description: 'Краткое описание к планам, чтобы пользователи могли быстро ознакомиться с предстоящим путешествием до просмотра мест.',
+  members: [
+    {
+      id: 'rmnff'
+    }
+  ],
+  todo: [],
+  files: [],
+  to: '13 aug',
+  back: '24 aug',
+  countries: [{
     name: 'Spain',
     flag: 'sp',
-    members: [
-      {
-        id: 'rmnff'
-      }
-    ],
     cities: [
       {
         name: 'Barcelona',
@@ -370,8 +376,8 @@ const countries = [
         }]
       }
     ]
-  }
-]
+  }]
+}]
 
 const RestaurantIcon = () => (<i style={{ color: '#FF4040' }} className="fas fa-utensils"></i>)
 const SightseeingIcon = () => (<i style={{ color: '#32CD32' }} className="fas fa-monument"></i>)
@@ -408,6 +414,7 @@ const Plans = (props) => {
   const [stateUpdated, setStateUpdated] = useState(false);
   const [selectedCity, setSelectedCity] = useState(0);
   const [addMemberSelected, setAddMemberSelected] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     fetch(jsonstoreurl).then(res => res.json()).then(data => {
@@ -429,6 +436,7 @@ const Plans = (props) => {
       }
     })[0];
     setPlan(fetched);
+    setIsAdmin(fetched.members[0].id === self);
   }, [stateUpdated]);
 
   useEffect(() => {
@@ -459,7 +467,7 @@ const Plans = (props) => {
     }).then(response => response.json()).then(data => {
       console.log(data);
     });
-  }
+  };
 
   // const profile = async () => {
   //   let url = 'https://85.143.216.19:3030/user/profile';
