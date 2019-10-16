@@ -7,6 +7,9 @@ import Login from './components/Login/Login.jsx';
 import Register from './components/Register/Register.jsx';
 import Profile from './components/Profile/Profile.jsx';
 import Plans from './components/Plans/Plans.jsx';
+import Country from './components/Country/Country';
+import City from './components/City/City';
+import Place from './components/Place/Place';
 
 const App = () => {
 
@@ -20,6 +23,9 @@ const App = () => {
         <Route path="/signup" component={ () => <Register isMobile={ isMobile } /> } />
         <Route path="/profile" component={ () => <Profile isMobile={ isMobile } /> } />
         <Route path="/plans" component={ () => <Plans isMobile={ isMobile } /> } />
+        <Route path="/country" component={ () => <Country isMobile={ isMobile } /> } />
+        <Route path="/city" component={ () => <City isMobile={ isMobile } /> } />
+        <Route path="/place" component={ () => <Place isMobile={ isMobile } /> } />
       </Switch>
     </Router>
   );
