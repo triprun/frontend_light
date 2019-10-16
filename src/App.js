@@ -10,6 +10,7 @@ import Plans from './components/Plans/Plans.jsx';
 import Country from './components/Country/Country';
 import City from './components/City/City';
 import Place from './components/Place/Place';
+import Place2 from './components/Place/Place2';
 
 const App = () => {
 
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/country" component={ () => <Country isMobile={ isMobile } /> } />
         <Route path="/city" component={ () => <City isMobile={ isMobile } /> } />
         <Route path="/place" component={ () => <Place isMobile={ isMobile } /> } />
+        <Route path="/place2" component={ () => <Place2 isMobile={ isMobile } /> } />
       </Switch>
     </Router>
   );

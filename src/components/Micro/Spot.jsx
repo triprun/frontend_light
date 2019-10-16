@@ -23,8 +23,10 @@ export const Spot = (props) => {
                   fontSize: '30px',
               }}>{props.caption}</div>
               <div style={{
-                  color: '#000',
-                  fontSize: '19px',
+                  color: 'rgb(0, 0, 0)',
+                  fontSize: '17px',
+                  maxWidth: '270px',
+                  marginRight: '20px',
               }}>{props.description}</div>
           </div>
       </div>

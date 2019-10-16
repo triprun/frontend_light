@@ -19,6 +19,7 @@ import { FlagIconCircled } from './../FlagIcon/FlagIcon';
 import {FirstCardLong, TripCard} from "../Micro/TripCard";
 import {CircledAvatarRow2} from "./../Micro/CircledAvatar2";
 import {LikeSq} from "../Micro/LikeSq";
+import {Spot} from "../Micro/Spot";
 
 const Wrap = styled.div`
   width: 100vw;
@@ -129,7 +130,7 @@ const Country = (props) => {
                     </Row>
                 </Row>
             </Row100>
-              <Row100 style={{marginTop: '50px',     flexFlow: 'column',}}>
+              <Row100 style={{marginTop: '50px', flexFlow: 'column',}}>
                   <Row style={{width: '80%', flexFlow: 'row', justifyContent: 'space-between',     height: '50px'}}>
                       <div style={{color: '#000', fontSize: '30px',}}>Photos</div>
                       <div style={{color: '#000', fontSize: '30px',}}>See all</div>
@@ -142,6 +143,34 @@ const Country = (props) => {
                       <Photo style={{background: 'url("https://static.mk.ru/upload/entities/2018/02/02/articles/detailPicture/02/4e/e8/2c/73ea0f2bde878167fc47dcc25a8433f8.jpg")'}}></Photo>
                   </Row>
               </Row100>
+
+              <Row100 style={{marginTop: '50px',     flexFlow: 'column',}}>
+                  <Row style={{width: '80%', flexFlow: 'row', justifyContent: 'space-between',     height: '50px'}}>
+                      <div style={{color: '#000', fontSize: '30px',}}>Cities</div>
+                      <div style={{color: '#000', fontSize: '30px',}}>See all</div>
+                  </Row>
+                  <Row style={{justifyContent: 'space-between',     width: '80%'}}>
+                      <Spot
+                          style={{display: 'flex'}}
+                          img="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcREQgop_eD7vjFNK2DpLtc9Q6jVO-r_rkqADYz0vDOvwuWEsCWu&s"
+                          caption="Москва"
+                          description="Москва – столица России, многонациональный город на Москве-реке в западной части страны"
+                      ></Spot>
+                      <Spot
+                          style={{display: 'flex'}}
+                          img="https://vpitergo.ru/wp-content/uploads/2019/05/1-89-1170x610.png"
+                          caption="Санкт-Петербург"
+                          description="Русский портовый город на побережье Балтийского моря, который в течение двух веков служил столицей Российской империи"
+                      ></Spot>
+                      <Spot
+                          style={{display: 'flex'}}
+                          img="https://img.geliophoto.com/nsk2017/00_nsk2017.jpg"
+                          caption="Новосибирск"
+                          description="Город является центром Новосибирской агломерации. Крупнейший торговый, деловой, культурный, транспортный, образовательный и научный центр Сибири. Часто Новосибирск именуют неофициально «Столицей Сибири»"
+                      ></Spot>
+                  </Row>
+              </Row100>
+
             <Row100 style={{marginTop: '40px',}}>
                 <ScrollRow style={{ width: '100vw', justifyContent: 'space-around', }}>
                     <TripCard
