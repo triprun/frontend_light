@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import Index from './components/Index/Index.jsx';
+import Index2 from './components/Index/Index2.jsx';
 import Login from './components/Login/Login.jsx';
 import Register from './components/Register/Register.jsx';
 import Profile from './components/Profile/Profile.jsx';
@@ -20,6 +21,7 @@ const App = () => {
     <Router>
       <Switch>
         <Route exact path="/" component={ () => <Index isMobile={ isMobile } /> } />
+        <Route exact path="/index2" component={ () => <Index2 isMobile={ isMobile } /> } />
         <Route path="/signin" component={ () => <Login isMobile={ isMobile } /> } />
         <Route path="/signup" component={ () => <Register isMobile={ isMobile } /> } />
         <Route path="/profile" component={ () => <Profile isMobile={ isMobile } /> } />
