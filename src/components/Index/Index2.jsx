@@ -25,6 +25,8 @@ import {PlaceCard} from "../Micro/PlaceCard";
 
 import lupa from './lupa.png';
 import logo from './logo.png';
+import backVideo from './video.mp4';
+import backVideo2 from './back_for_video.png';
 
 const Wrap = styled.div`
   width: 100vw;
@@ -108,6 +110,12 @@ const Logo = styled.div`
     width: 70px;
     background-repeat: no-repeat;
 `;
+/*
+const BackVideo = styled.div`
+    background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url(${backVideo});
+    width: 70px;
+    background-repeat: no-repeat;
+`;*/
 
 const Index2 = (props) => {
 
@@ -156,6 +164,48 @@ const Index2 = (props) => {
                       transition: 'transform .2s',
                   }} src="https://vignette.wikia.nocookie.net/marvelcinematicuniverse/images/f/f8/Amelia_Pinney.jpg/revision/latest?cb=20151228165724"/></div>
 
+              </Row100>
+              <Row100 style={{flexFlow: 'column', marginTop: '20px', position: 'relative'}}>
+                  <div style={{position: 'absolute',
+                      width: '100%',
+                      height: '100%',
+                      background: '#00000073',
+                      zIndex: '5'}}></div>
+                  <div style={{position: 'absolute',
+                      color: '#fff',
+                      fontSize: '31px',
+                      marginTop: '340px',
+                      marginLeft: '100px',
+                      zIndex: '10'}}>СПЕЦИАЛЬНО ДЛЯ ВАС</div>
+                  <div style={{position: 'absolute',
+                      color: '#fff',
+                      fontSize: '20px',
+                      marginTop: '400px',
+                      marginLeft: '100px',
+                      width: '450px',
+                      zIndex: '10'}}>Путешествуй с TripRun</div>
+                  <div style={{position: 'absolute',
+                      color: '#fff',
+                      fontSize: '20px',
+                      marginTop: '300px',
+                      marginLeft: '100px',
+                      zIndex: '10'}}>создавай маршрут идеального путешествия вместе с друзьями</div>
+                  <div style={{    position: 'absolute',
+                      color: '#000',
+                      fontSize: '20px',
+                      marginTop: '480px',
+                      marginLeft: '100px',
+                      zIndex: '10',
+                      width: '160px',
+                      textAlign: 'center',
+                      background: '#fff',
+                      height: '40px',
+                      lineHeight: '40px',
+                      borderRadius: '7px',
+                      cursor: 'pointer',}}>Подробнее</div>
+                  <video loop muted autoPlay poster={backVideo2} className="fullscreen-bg__video">
+                      <source src={backVideo} type="video/mp4" />
+                  </video>
               </Row100>
               <Row100 style={{flexFlow: 'column', marginTop: '50px',}}>
                   <Row style={{color: '#525252', fontSize: '30px', fontWeight: '600',width: '70%', margin: '0 auto', justifyContent: 'space-between'}}>Актуальные планы пользователей<div><a href="#" style={{textDecoration: 'none', color: 'rgb(105, 105, 105)', fontSize: '15px', fontStyle: 'italic', fontWeight: '100',}}>Посмотреть все</a></div></Row>
