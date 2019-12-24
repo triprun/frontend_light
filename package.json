@@ -5,6 +5,7 @@
   "dependencies": {
     "moment": "^2.24.0",
     "react": "^16.8.6",
+    "react-beautiful-dnd": "^11.0.5",
     "react-dom": "^16.8.6",
     "react-flag-icon-css": "^1.0.25",
     "react-notifications": "^1.4.3",

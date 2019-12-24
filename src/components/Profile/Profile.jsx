@@ -10,10 +10,10 @@ import styled from 'styled-components';
 
 import moment from 'moment';
 
-import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
 
 import { Map } from './../Micro/Map.jsx';
-import { HeadMenu } from './../Micro/HeadMenu.jsx';
+import { UserMenu } from './../Micro/HeadMenu.jsx';
 
 import { CircledAvatarBig } from './../Micro/CircledAvatar.jsx';
 
@@ -21,6 +21,8 @@ import { Manager, Notification } from './../Micro/Notifications.jsx';
 
 import { TripCard, FirstCardLong, LastCardLong } from './../Micro/TripCard.jsx';
 import { StoryCard, FirstStoryCardLong, LastStoryCardLong } from './../Micro/StoryCard.jsx';
+
+import logo from './logo.svg';
 
 const Outer = styled.div``;
 
@@ -71,6 +73,41 @@ const WrapDoubler = styled.div`
     height: 0.5px;
     width: 86%;
   }
+`;
+
+const HeaderMenu = styled.div`
+  width: 90vw;
+  height: 6vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 5vw;
+`;
+
+const HeaderMenuLogo = styled.img`
+  height: 100%;
+`;
+
+const HeaderMenuInputWrap = styled.div`
+  width: 40vw;
+  height: 4vh;
+  box-shadow: 1px 1px 0 rgba(0,0,0,0.2);
+  border: 1px solid rgba(0,0,0,0.3);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const HeaderMenuInput = styled.input`
+  width: 90%;
+  height: 100%;
+  font-size: 14pt;
+  font-weight: 500;
+  padding-left: 12px;
+  border: none;
+  outline: none;
 `;
 
 const WrapCentered = styled.div`
@@ -260,8 +297,8 @@ const Profile = (props) => {
   // };
 
   useEffect(() => {
-    fetch(jsonstoreurl).then(res => res.json()).then(data => {
-      setState(data.result);
+    fetch(jsonstoreurl + '/latest', { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
       setTimeout(() => {
         setStateUpdated(true);
       }, 100);
@@ -347,7 +384,14 @@ const Profile = (props) => {
       <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" style={{ width: '110px' }} />
     </WrapCentered> : (
       <Outer>
-        <HeadMenu />
+        <HeaderMenu>
+          <HeaderMenuLogo src={ logo } />
+          <HeaderMenuInputWrap>
+            <i style={{ marginLeft: '12px' }} className="fas fa-search"></i>
+            <HeaderMenuInput placeholder={ `Попробуйте «Лос-Анджелес»` } />
+          </HeaderMenuInputWrap>
+          <UserMenu />
+        </HeaderMenu>
         <Wrap>
           <Card>
             <CenterUsername>

@@ -40,10 +40,10 @@ const WeekDayName = styled.p`
 export const CityTimeFilter = (props) => {
   return typeof props.days === 'undefined' ? (<></>) : (
     <Div>
-      <Day><WeekDayName>Overview</WeekDayName></Day>
+      <Day onClick={ (e) => { props.filter(e, 'null') } }><WeekDayName>Overview</WeekDayName></Day>
       { props.days.map(day => {
           return (
-            <Day>
+            <Day onClick={ (e) => { props.filter(e, day.date) } }>
               <Col>
                 <Date>
                   {day.date}

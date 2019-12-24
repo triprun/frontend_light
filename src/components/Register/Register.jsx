@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { Manager, Notification } from './../Micro/Notifications.jsx';
 
-import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
 
 import background from './background.jpg';
 
@@ -139,8 +139,8 @@ const Register = (props) => {
   // }, [buttonClicked]);
 
   useEffect(() => {
-    fetch(jsonstoreurl).then(res => res.json()).then(data => {
-      setState(data.result);
+    fetch(jsonstoreurl + '/latest', { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
     });
   }, []);
 
@@ -174,10 +174,8 @@ const Register = (props) => {
       setInputFieldsReady(false);
       return Manager.warning('E-mail or Username is already taken, please contact support if it is yours', 'Error occured', 2000);
     }
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
     fetch(jsonstoreurl, {
-      method: 'POST',
+      method: 'PUT',
       headers: headers,
       body: JSON.stringify({
         ...state,
@@ -189,7 +187,8 @@ const Register = (props) => {
         }].concat(state.users)
       })
     }).then(response => {
-      if(response.status !== 201) {
+      console.log(response);
+      if(response.status !== 200) {
         setButtonClicked(false);
         setInputFieldsReady(false);
         return Manager.warning('Server-side error occured, please try later', 'Error occured', 2000);

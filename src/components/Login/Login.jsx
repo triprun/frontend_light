@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import { Manager, Notification } from './../Micro/Notifications.jsx';
 
-import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
 
 import background from './background.jpg';
 
@@ -116,9 +116,8 @@ const Login = (props) => {
   // };
 
   useEffect(() => {
-    fetch(jsonstoreurl).then(res => res.json()).then(data => {
-      console.log(data.result);
-      setState(data.result);
+    fetch(jsonstoreurl + '/latest', { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
     });
   }, []);
 

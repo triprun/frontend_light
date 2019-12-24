@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import { NavLink } from 'react-router-dom';
 
-import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
 
 import { CircledAvatarSimple } from './../Micro/CircledAvatar.jsx';
 
@@ -18,10 +18,6 @@ const MenuLine = styled.div`
 `;
 
 const Menu = styled.div`
-  width: 98vw;
-  height: 50px;
-  margin-left: 1vw;
-  margin-top: 5px;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
@@ -39,7 +35,7 @@ const LinkText = styled.p`
   padding-right: 18px;
 `;
 
-export const HeadMenu = (props) => {
+export const UserMenu = (props) => {
   const [unauthorized, unauthorize] = useState(false);
   const [okay, setOkay] = useState(false);
   const [state, setState] = useState(null);
@@ -54,8 +50,8 @@ export const HeadMenu = (props) => {
 
   useEffect(() => {
     if(!okay) return;
-    fetch(jsonstoreurl).then(res => res.json()).then(data => {
-      setState(data.result);
+    fetch(jsonstoreurl + '/latest', { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
       setTimeout(() => {
         setStateUpdated(true);
       }, 100);
@@ -74,15 +70,22 @@ export const HeadMenu = (props) => {
     setUser(found[0]);
   }, [stateUpdated]);
 
+  return unauthorized ? (<Menu>
+    <Link to="/signin"><LinkText>Sign In</LinkText></Link>
+    <Link to="/signup"><LinkText>Sign Up</LinkText></Link>
+  </Menu>) : (<Menu>
+    <Link to="/"><LinkText>Home</LinkText></Link>
+    <Link to="/plans"><LinkText>My Plans</LinkText></Link>
+    <Link to="/profile">
+      <CircledAvatarSimple src={ user ? user.avatar : 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
+    </Link>
+  </Menu>);
+}
+
+export const HeadMenu = (props) => {
   return (
-    unauthorized ? <></> : <MenuLine>
-      <Menu>
-        <Link to="/"><LinkText>Home</LinkText></Link>
-        <Link to="/plans"><LinkText>My Plans</LinkText></Link>
-        <Link to="/profile">
-          <CircledAvatarSimple src={ user ? user.avatar : 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
-          </Link>
-      </Menu>
+    <MenuLine>
+      <UserMenu style={{ width: "98vw", height: "50px", marginLeft: "1vw", marginTop: "5px" }} { ...props } />
     </MenuLine>
   );
 };

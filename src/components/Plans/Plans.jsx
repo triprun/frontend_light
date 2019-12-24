@@ -6,7 +6,7 @@ import styled from 'styled-components';
 
 import moment from 'moment';
 
-import { jsonstoreurl } from './../../hooks/useJSONStore.jsx';
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
 
 import {
   fetchFromType,
@@ -70,6 +70,14 @@ const RightColumn = styled(Column)`
   overflow: scroll;
 `;
 
+const RightColumnScrollable = styled(Column)`
+  flex: 12;
+  background: rgb(244,245,248);
+  z-index: 1;
+  overflow-x: scroll;
+  overflow-y: hide;
+`;
+
 const InnerColumn = styled(Column)`
   width: 100%;
   height: 100%;
@@ -98,6 +106,15 @@ const Quote = styled.p`
   padding: 0;
   padding-left: 38px;
   padding-right: 50px;
+`;
+
+const QuoteArea = styled.p`
+  outline: none;
+  border: none;
+  width: 100%;
+  resize: none;
+  font-size: 12pt;
+  color: rgba(0,0,0,0.5);
 `;
 
 const ChatButton = styled.div`
@@ -256,6 +273,19 @@ const CloseAddMember = styled.small`
   color: rgba(0,0,0,0.3);
 `;
 
+const Tfilter = styled.h4`
+  &.activeFilter {
+    text-decoration: underline;
+  }
+`;
+
+const MiniCountryCard = styled.div`
+  display: flex;
+  flex: 3;
+  height: 80vh;
+  margin-right: 20px;
+`;
+
 const Plans = (props) => {
 
   const [loading, setLoading] = useState(true);
@@ -273,8 +303,8 @@ const Plans = (props) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    fetch(jsonstoreurl).then(res => res.json()).then(data => {
-      setState(data.result);
+    fetch(jsonstoreurl, { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
       setTimeout(() => {
         setStateUpdated(true);
       }, 100);
@@ -287,12 +317,13 @@ const Plans = (props) => {
     const fetched = state.plans.map(plan => {
       return plan.members.filter(member => member.id === self) ? plan : null;
     }).filter(plan => plan != null)[selectedPlan];
-    setPlan(fetched);
+    setPlan(JSON.parse(JSON.stringify(fetched)));
     setIsAdmin(fetched.members[0].id === self);
   }, [stateUpdated]);
 
   useEffect(() => {
     if(!fetchedPlan) return;
+    console.log(fetchedPlan);
     setLoading(false);
   }, [fetchedPlan]);
 
@@ -310,8 +341,6 @@ const Plans = (props) => {
     const found = state.users.filter(user => user.username === input)[0];
     if(!found) return Manager.warning('User with such username not found', 'Not found', 2000);
     state.plans[selectedPlan].members = state.plans[selectedPlan].members.concat({ id: input });
-    const headers = new Headers();
-    headers.append('Content-Type', 'application/json');
     fetch(jsonstoreurl, {
       method: 'POST',
       headers: headers,
@@ -327,9 +356,65 @@ const Plans = (props) => {
     });
   };
 
-  const filterPlacesByType = (type) => {
-
+  const handleDescription = (e) => {
+    // e.preventDefault();
+    if(!isAdmin) return;
+    setPlan({
+      ...fetchedPlan,
+      description: e.target.value
+    });
   }
+
+  const fetchCityDates = (city) => {
+    const dates = [];
+    const start = moment(city.arrival, 'DD-MM-YYYY').toDate();
+    dates.push(start);
+    const end = moment(city.departure, 'DD-MM-YYYY').toDate();
+    let tomorrow = moment(start);
+    while(tomorrow < end) {
+      tomorrow = moment(tomorrow).add(1, 'day');
+      dates.push(tomorrow);
+    }
+    return dates.map(date => {
+      return {
+        wname: moment(date).format('dddd'),
+        date: moment(date).format('MMM Do')
+      }
+    });
+  };
+
+  const filterPlacesByType = (e, type) => {
+    const elements = [].slice.call(document.getElementsByClassName('typeFilter'));
+    console.log(elements);
+    elements.map(el => el.classList.remove('activeFilter'));
+    console.log(e.target);
+    e.target.classList.add('activeFilter');
+    if(type === 'null') return setPlan(JSON.parse(JSON.stringify({
+      ...state.plans[selectedPlan]
+    })));
+    fetchedPlan
+      .countries[selectedCountry]
+      .cities[selectedCity]
+      .places = state.plans[selectedPlan]
+        .countries[selectedCountry]
+        .cities[selectedCity]
+        .places.filter(place => place.type === type);
+    setPlan(JSON.parse(JSON.stringify({ ...fetchedPlan })));
+  };
+
+  const filterPlacesByTime = (e, time) => {
+    if(time === 'null') return setPlan(JSON.parse(JSON.stringify({
+      ...state.plans[selectedPlan]
+    })));
+    fetchedPlan
+      .countries[selectedCountry]
+      .cities[selectedCity]
+      .places = state.plans[selectedPlan]
+        .countries[selectedCountry]
+        .cities[selectedCity]
+        .places.filter(place => moment(`${place.date}/${place.arrival}`, 'DD-MM-YYYY/HH:mm').diff(time, 'minutes'));
+    setPlan(JSON.parse(JSON.stringify({ ...fetchedPlan })));
+  };
 
   return(
     unauthorized ? <Redirect to={{ pathname: '/signin' }} /> : loading ? <WrapCentered>
@@ -341,7 +426,7 @@ const Plans = (props) => {
             <span style={{ color: 'skyblue', paddingTop: '15px', marginLeft: '8%' }}><NavLink to="/" style={{ textDecoration: 'none', color: 'skyblue' }}>{ '<–– Назад' }</NavLink></span>
             <Row style={{ width: '80%', marginTop: 20, marginLeft: '8%' }}>
               <Column>
-                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>{ fetchedPlan.to } – { fetchedPlan.back }</p>
+                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>{ fetchedPlan.to.split('-').join('.') } – { fetchedPlan.back.split('-').join('.') }</p>
                 <h1 style={{ margin: 0, marginTop: 16, fontSize: '36pt' }}>{ fetchedPlan.name }</h1>
                 <Row>
                   { fetchedPlan.countries.map(country => <FlagIconCircled code={ country.flag } />) }
@@ -350,7 +435,7 @@ const Plans = (props) => {
             </Row>
             <About style={{ width: '80%', marginTop: 5, marginLeft: '8%', color: 'rgba(0,0,0,0.5)' }}>
               <LQuote>“</LQuote>
-              <Quote>{ fetchedPlan.description }</Quote>
+              <Quote><QuoteArea contentEditable onChange={ handleDescription }>{ fetchedPlan.description }</QuoteArea></Quote>
               <RQuote>”</RQuote>
             </About>
             <Column>
@@ -422,29 +507,31 @@ const Plans = (props) => {
             </Column>
           </InnerColumn>
         </LeftColumn>
-        <RightColumn>
+        { selectedCountry === null ? <RightColumnScrollable>
+          {
+            fetchedPlan.countries.map(country => {
+              return (
+                <MiniCountryCard></MiniCountryCard>
+              );
+            })
+          }
+        </RightColumnScrollable> : <RightColumn>
           <InnerColumn>
             <PlaceTypes>
               <Row>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Все места</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Отели</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Рестораны</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Достопримечательности</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Места для фото</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Избранные</h4>
-                <h4 style={{ paddingTop: '5px', cursor: 'pointer' }}>Мои места</h4>
+                <Tfilter className="typeFilter activeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'null') } }>Все места</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Hotel') } }>Отели</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Restaurant') } }>Рестораны</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Sightseeing') } }>Достопримечательности</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Photoplace') } }>Места для фото</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Favourite') } }>Избранные</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'null') } }>Мои места</Tfilter>
               </Row>
             </PlaceTypes>
             <PlaceItems>
               <h3>{ fetchedPlan.countries[selectedCountry].cities[selectedCity].name }, { fetchedPlan.countries[selectedCountry].name }</h3>
               <Row style={{ width: '100%' }}>
-                <CityTimeFilter days={[{
-                  date: '13 august',
-                  wname: 'Monday'
-                }, {
-                  date: '14 august',
-                  wname: 'Tuesday'
-                }]} />
+                <CityTimeFilter days={ fetchCityDates(fetchedPlan.countries[selectedCountry].cities[selectedCity]) } filter={ filterPlacesByTime } />
                 <Column style={{ width: '85%' }}>
                   { fetchedPlan.countries[selectedCountry].cities[selectedCity].places.map(place => {
                       return (
@@ -453,7 +540,7 @@ const Plans = (props) => {
                             <TextSide>
                               <small style={{ color: 'grey' }}>{ fetchFromType(place.type) } { place.type }</small>
                               <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>BBQ inn, Meat-o-rant</h2>
-                              <small style={{ color: 'grey' }}>В { place.arrival } | Открыто: { place.open } - { place.close } | Меню</small>
+                              <small style={{ color: 'grey' }}>В { place.arrival } | Открыто: { place.open ? `${place.open} - ${place.close}` : 'All-day' } | Меню</small>
                               <br />
                               <small style={{ color: 'grey' }}>Адрес: { place.address }</small>
                               <br />
@@ -477,7 +564,7 @@ const Plans = (props) => {
           </InnerColumn>
           <br />
           <br />
-        </RightColumn>
+        </RightColumn> }
         <AddMemberBar style={{ display: addMemberSelected ? 'flex' : 'none' }}>
           <AddMemberInput id="memberUsername" type="text" placeholder="Введите юзернейм пользователя" />
           <AddMemberButton onClick={ fetchUserAndAdd } >Добавить</AddMemberButton>
