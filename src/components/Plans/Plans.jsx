@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
-import { Redirect } from 'react-router-dom';
+import { Redirect, NavLink } from 'react-router-dom';
 
 import styled from 'styled-components';
 
 import moment from 'moment';
 
+import { jsonstoreurl, headers } from './../../hooks/useJSONStore.jsx';
+
+import {
+  fetchFromType,
+  RestaurantIcon,
+  SightseeingIcon,
+  HotelIcon,
+  PhotoplaceIcon,
+  FavouriteIcon,
+  NewplaceIcon
+} from './../Micro/CommonIcons.jsx';
+
+import { Manager, Notification } from './../Micro/Notifications.jsx';
+
 import { CircledAvatarSimple } from './../Micro/CircledAvatar.jsx';
+import { CityTimeFilter } from './../Micro/CityTimeFilter.jsx';
 
 import { FlagIconCircled } from './../FlagIcon/FlagIcon';
 
@@ -16,6 +31,16 @@ const Wrap = styled.div`
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
+  justify-content: center;
+`;
+
+const WrapCentered = styled.div`
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 `;
 
 const Row = styled.div`
@@ -33,67 +58,29 @@ const Column = styled.div`
 `;
 
 const LeftColumn = styled(Column)`
-  flex: 9;
+  flex: 4;
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
   z-index: 2;
 `;
 
 const RightColumn = styled(Column)`
-  flex: 11;
+  flex: 12;
   background: rgb(244,245,248);
   z-index: 1;
+  overflow: scroll;
+`;
+
+const RightColumnScrollable = styled(Column)`
+  flex: 12;
+  background: rgb(244,245,248);
+  z-index: 1;
+  overflow-x: scroll;
+  overflow-y: hide;
 `;
 
 const InnerColumn = styled(Column)`
   width: 100%;
   height: 100%;
-`;
-
-const Marginer = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 90%;
-  margin-left: 10%;
-`;
-
-const Numbers = styled(Column)`
-  justify-content: center;
-  text-align: center;
-  cursor: pointer;
-
-  h2 {
-    margin: 0;
-    padding: 0;
-    margin-bottom: 4px;
-    font-weight: 300;
-  }
-
-  small {
-    margin: 0;
-    padding: 0;
-    color: #69BCD5;
-  }
-`;
-
-const ShortBio = styled.p`
-  text-align: center;
-`;
-
-const Welcome = styled.h1`
-  margin: 0;
-  padding: 0;
-  margin-bottom: 1px;
-`;
-
-const UnderWelc = styled.small`
-  margin: 0;
-  padding: 0;
-  color: rgba(0,0,0,0.3);
-
-  u:hover {
-    color: #69BCD5;
-    cursor: pointer;
-  }
 `;
 
 const About = styled.div`
@@ -121,36 +108,23 @@ const Quote = styled.p`
   padding-right: 50px;
 `;
 
-const CenterUsername = styled.h4`
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-`;
-
-const UsernameInput = styled.input`
+const QuoteArea = styled.p`
   outline: none;
   border: none;
-  width: 70%;
-  font-size: 14pt;
-  text-align: center;
-
-  &::-webkit-contacts-auto-fill-button,
-  &::-webkit-credentials-auto-fill-button {
-    visibility: hidden;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-  }
+  width: 100%;
+  resize: none;
+  font-size: 12pt;
+  color: rgba(0,0,0,0.5);
 `;
 
 const ChatButton = styled.div`
-  padding: 6px 6px;
+  padding: 8px 27px;
   background: rgb(81, 110, 236);
   color: white;
   text-align: center;
-  border-radius: 20px;
+  border-radius: 24px;
   font-size: 10pt;
-  width: 60%;
+  cursor: pointer;
 `;
 
 const DownloadButton = styled.div`
@@ -162,153 +136,444 @@ const DownloadButton = styled.div`
   border-radius: 4px;
 `;
 
-const Profile = (props) => {
+const TODOCircle = styled.div`
+  width: 8px;
+  height: 8px;
+  margin-left: 13px;
+  margin-right: 13px;
+  border-radius: 50px;
+  background: ${ props => props.background };
+  opacity: 0.7;
+`;
 
-  const [loading, setLoading] = useState(false);
-  // const [user, setUser] = useState(null);
+const FileIcon = styled.div`
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  background: skyblue;
+  opacity: 0.6;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  color: blue;
+  cursor: pointer;
+`;
+
+const Filename = styled.h3`
+  margin: 0;
+  padding: 0;
+  font-size: 12pt;
+  font-weight: normal;
+`;
+
+const Filedesc = styled.small`
+  margin: 0;
+  padding: 0;
+  font-size: 8pt;
+  color: rgba(0,0,0,0.5);
+`;
+
+const PlaceTypes = styled.div`
+  width: 90%;
+  height: 70px;
+  background: white;
+  border-radius: 12px;
+  padding-left: 3%;
+  padding-right: 3%;
+  margin-left: 2%;
+  margin-top: 1%;
+  box-shadow: 0 0 9px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+`;
+
+const PlaceItems = styled.div`
+  width: 90%;
+  min-height: 85%;
+  background: white;
+  border-radius: 5px;
+  padding-left: 3%;
+  padding-right: 3%;
+  margin-left: 2%;
+  margin-top: 1%;
+  box-shadow: 0 0 9px rgba(0,0,0,0.1);
+`;
+
+const PlaceItem = styled.div`
+  width: 100%;
+  margin-left: 2%;
+  height: 240px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+`;
+
+const TextSide = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  flex: 5;
+`;
+
+const ImageSide = styled.div`
+  display: flex;
+  flex: 3;
+`;
+
+const ImageSideImage = styled.img`
+  width: 100%;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+`;
+
+const AddMemberBar = styled.div`
+  position: absolute;
+  width: 40vw;
+  height: 5vh;
+  margin-top: 47.5vh;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 0 0 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+`;
+
+const AddMemberInput = styled.input`
+  height: 3vh;
+  width: 30vw;
+  font-size: 18pt;
+  border: none;
+  outline: none;
+`;
+
+const AddMemberButton = styled.div`
+  width: 7vw;
+  height: 3vh;
+  border-radius: 30px;
+  background: rgb(81, 110, 236);
+  color: white;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 1vw;
+`;
+
+const CloseAddMember = styled.small`
+  margin-top: -2.5vh;
+  cursor: pointer;
+  color: rgba(0,0,0,0.3);
+`;
+
+const Tfilter = styled.h4`
+  &.activeFilter {
+    text-decoration: underline;
+  }
+`;
+
+const MiniCountryCard = styled.div`
+  display: flex;
+  flex: 3;
+  height: 80vh;
+  margin-right: 20px;
+`;
+
+const Plans = (props) => {
+
+  const [loading, setLoading] = useState(true);
   const [unauthorized, unauthorize] = useState(false);
-  // const [id] = useState(window.location.pathname.split('/')[2]);
 
-  // const profile = async () => {
-  //   let url = 'http://85.143.216.19:3030/user/profile';
-  //   let config = {
-  //     method: 'GET',
-  //     mode: 'cors',
-  //     cache: 'no-cache',
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'Access-Control-Allow-Origin': '*'
-  //     },
-  //     redirect: 'follow',
-  //     referrer: 'no-referrer'
-  //   };
-  //   if(id) url = url + `/${id}`;
-  //   else config.body = JSON.stringify({
-  //     accessToken: window.localStorage.getItem('access-token')
-  //   });
-  //   const response = await fetch(url, config);
-  //   const data = await response.json();
-  //   const code = data.statusCode || 200;
-  //   if(code === 200) return data;
-  //   return null;
-  // };
+  const [state, setState] = useState(null);
+  const [stateUpdated, setStateUpdated] = useState(false);
+  const [fetchedPlan, setPlan] = useState(null);
 
-  // useEffect(() => {
-  //   if(user) return setLoading(false);
-  //   profile().then(data => {
-  //     if(!data && !id) unauthorize(true);
-  //     setUser(data);
-  //     setTimeout(() => {
-  //       setLoading(false);
-  //     }, 500);
-  //   });
-  // }, [user]);
+  const [selectedPlan, setSelectedPlan] = useState(0);
+  const [selectedCountry, setSelectedCountry] = useState(0);
+  const [selectedCity, setSelectedCity] = useState(0);
+
+  const [addMemberSelected, setAddMemberSelected] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    fetch(jsonstoreurl, { headers: headers }).then(res => res.json()).then(data => {
+      setState(data);
+      setTimeout(() => {
+        setStateUpdated(true);
+      }, 100);
+    });
+  }, []);
+
+  useEffect(() => {
+    if(!stateUpdated) return;
+    const self = window.localStorage.getItem('username');
+    const fetched = state.plans.map(plan => {
+      return plan.members.filter(member => member.id === self) ? plan : null;
+    }).filter(plan => plan != null)[selectedPlan];
+    setPlan(JSON.parse(JSON.stringify(fetched)));
+    setIsAdmin(fetched.members[0].id === self);
+  }, [stateUpdated]);
+
+  useEffect(() => {
+    if(!fetchedPlan) return;
+    console.log(fetchedPlan);
+    setLoading(false);
+  }, [fetchedPlan]);
+
+  const handleAddMember = (e) => {
+    e.preventDefault();
+    setAddMemberSelected(!addMemberSelected);
+  };
+
+  const fetchUserAndAdd = (e) => {
+    e.preventDefault();
+    const input = document.getElementById('memberUsername').value;
+    const self = window.localStorage.getItem('username');
+    const alreadyMember = state.plans[selectedPlan].members.filter(member => member.id === input)[0];
+    if(input === self || alreadyMember) return Manager.warning('User is on the trip already', 'Whoops!', 2000);
+    const found = state.users.filter(user => user.username === input)[0];
+    if(!found) return Manager.warning('User with such username not found', 'Not found', 2000);
+    state.plans[selectedPlan].members = state.plans[selectedPlan].members.concat({ id: input });
+    fetch(jsonstoreurl, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(state)
+    }).then(response => response.json()).then(data => {
+      if(data.ok) {
+        setStateUpdated(false);
+        setState(state);
+        setStateUpdated(true);
+        setAddMemberSelected(!addMemberSelected);
+        Manager.success('User joined the trip', 'So quick', 2000);
+      }
+    });
+  };
+
+  const handleDescription = (e) => {
+    // e.preventDefault();
+    if(!isAdmin) return;
+    setPlan({
+      ...fetchedPlan,
+      description: e.target.value
+    });
+  }
+
+  const fetchCityDates = (city) => {
+    const dates = [];
+    const start = moment(city.arrival, 'DD-MM-YYYY').toDate();
+    dates.push(start);
+    const end = moment(city.departure, 'DD-MM-YYYY').toDate();
+    let tomorrow = moment(start);
+    while(tomorrow < end) {
+      tomorrow = moment(tomorrow).add(1, 'day');
+      dates.push(tomorrow);
+    }
+    return dates.map(date => {
+      return {
+        wname: moment(date).format('dddd'),
+        date: moment(date).format('MMM Do')
+      }
+    });
+  };
+
+  const filterPlacesByType = (e, type) => {
+    const elements = [].slice.call(document.getElementsByClassName('typeFilter'));
+    console.log(elements);
+    elements.map(el => el.classList.remove('activeFilter'));
+    console.log(e.target);
+    e.target.classList.add('activeFilter');
+    if(type === 'null') return setPlan(JSON.parse(JSON.stringify({
+      ...state.plans[selectedPlan]
+    })));
+    fetchedPlan
+      .countries[selectedCountry]
+      .cities[selectedCity]
+      .places = state.plans[selectedPlan]
+        .countries[selectedCountry]
+        .cities[selectedCity]
+        .places.filter(place => place.type === type);
+    setPlan(JSON.parse(JSON.stringify({ ...fetchedPlan })));
+  };
+
+  const filterPlacesByTime = (e, time) => {
+    if(time === 'null') return setPlan(JSON.parse(JSON.stringify({
+      ...state.plans[selectedPlan]
+    })));
+    fetchedPlan
+      .countries[selectedCountry]
+      .cities[selectedCity]
+      .places = state.plans[selectedPlan]
+        .countries[selectedCountry]
+        .cities[selectedCity]
+        .places.filter(place => moment(`${place.date}/${place.arrival}`, 'DD-MM-YYYY/HH:mm').diff(time, 'minutes'));
+    setPlan(JSON.parse(JSON.stringify({ ...fetchedPlan })));
+  };
 
   return(
-    unauthorized ? <Redirect to={{ pathname: '/signin' }} /> : loading ? <Wrap></Wrap> : (
+    unauthorized ? <Redirect to={{ pathname: '/signin' }} /> : loading ? <WrapCentered>
+      <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" style={{ width: '110px' }} />
+    </WrapCentered> : (
       <Wrap>
         <LeftColumn>
           <InnerColumn>
-            <Row style={{ width: '80%', marginTop: 60, marginLeft: '8%' }}>
+            <span style={{ color: 'skyblue', paddingTop: '15px', marginLeft: '8%' }}><NavLink to="/" style={{ textDecoration: 'none', color: 'skyblue' }}>{ '<–– Назад' }</NavLink></span>
+            <Row style={{ width: '80%', marginTop: 20, marginLeft: '8%' }}>
               <Column>
-                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>13 august – 24 august</p>
-                <h1 style={{ margin: 0, marginTop: 16, fontSize: '36pt' }}>Eurotrip</h1>
+                <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)' }}>{ fetchedPlan.to.split('-').join('.') } – { fetchedPlan.back.split('-').join('.') }</p>
+                <h1 style={{ margin: 0, marginTop: 16, fontSize: '36pt' }}>{ fetchedPlan.name }</h1>
                 <Row>
-                  <FlagIconCircled code='gb' />
-                  <FlagIconCircled code='es' />
-                  <FlagIconCircled code='pl' />
+                  { fetchedPlan.countries.map(country => <FlagIconCircled code={ country.flag } />) }
                 </Row>
-              </Column>
-              <Column>
-                <Column>
-                  <p style={{ margin: 0, color: 'rgba(0,0,0,0.5)', textAlign: 'right' }}>Trip members:</p>
-                  <Row style={{ paddingTop: 15, marginLeft: 18, justifyContent: 'flex-end' }}>
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                    <CircledAvatarSimple src="http://www.inspiredluv.com/wp-content/uploads/2016/09/27-beautiful-girl-image.jpg" />
-                  </Row>
-                  <Row style={{ justifyContent: 'flex-end', marginLeft: 18 }}>
-                    <ChatButton>
-                      Открыть Чат
-                    </ChatButton>
-                  </Row>
-                </Column>
               </Column>
             </Row>
             <About style={{ width: '80%', marginTop: 5, marginLeft: '8%', color: 'rgba(0,0,0,0.5)' }}>
               <LQuote>“</LQuote>
-              <Quote>A short description of a trip that is being planned, so every newcomer (freshmen) might understand what kind of trip they join.</Quote>
+              <Quote><QuoteArea contentEditable onChange={ handleDescription }>{ fetchedPlan.description }</QuoteArea></Quote>
               <RQuote>”</RQuote>
             </About>
-            <Row style={{ width: '80%', marginTop: 5, marginLeft: '8%' }}>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Длительность</p>
-                <p style={{ margin: 0 }}>3 дня</p>
-              </Column>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Страны и города</p>
-                <p style={{ margin: 0 }}>Москва, Киев, Пекин, Токио</p>
-              </Column>
-              <Column>
-                <p style={{ margin: 0, marginBottom: 12, color: 'rgba(0,0,0,0.5)' }}>Включено</p>
-                <p style={{ margin: 0 }}>Отель, Транспорт, Обед</p>
-              </Column>
-            </Row>
-            <br />
-            <br />
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
+            <Column>
+              <p style={{ margin: 0, marginLeft: '-32px', color: 'rgba(0,0,0,0.5)', textAlign: 'center' }}>Участники путешествия:</p>
+              <Row style={{ paddingTop: 10, justifyContent: 'center' }}>
+                { fetchedPlan.members.map(member => {
+                    const user = state.users.filter(user => user.username === member.id)[0];
+                    return (
+                      <NavLink to={ `/profile/${user.username}` }>
+                        <CircledAvatarSimple src={ user.avatar || 'https://dwrhx129r2-flywheel.netdna-ssl.com/wp-content/uploads/2015/08/blank-avatar.png' } />
+                      </NavLink>
+                    );
+                  })
+                }
+              </Row>
+              <Row style={{ justifyContent: 'center' }}>
+                <ChatButton onClick={ handleAddMember }>
+                  Добавить
+                </ChatButton>
+              </Row>
             </Column>
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
-            </Column>
-            <Column style={{ width: '80%', marginTop: 5, marginBottom: 20, marginLeft: '8%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-              <Column style={{ width: '78%' }}>
-                <Row>
-                  <DownloadButton />
-                  <Column>
-                    <p style={{ margin: 0, marginTop: 2 }}>Document 1</p>
-                    <p style={{ marginTop: 10, color: 'rgba(0,0,0,0.5)' }}>This is a description to the document, if any exists</p>
-                  </Column>
-                </Row>
-              </Column>
+            <Column>
+              <table style={{ width: '90%', marginLeft: '5%' }}>
+                <tbody>
+                  <tr>
+                    <td><h3>TODO Лист</h3></td>
+                  </tr>
+                  <tr>
+                    <td>Собрать вещи</td>
+                    <td><TODOCircle background="green" /></td>
+                    <td>Готово</td>
+                  </tr>
+                  <tr>
+                    <td>Выбрать гостиницу</td>
+                    <td><TODOCircle background="orange" /></td>
+                    <td>В процессе</td>
+                  </tr>
+                  <tr>
+                    <td>Купить фетровое пальто</td>
+                    <td><TODOCircle background="red" /></td>
+                    <td>Срочно</td>
+                  </tr>
+                  <tr>
+                    <td>Взять с собой книгу</td>
+                    <td><TODOCircle background="skyblue" /></td>
+                    <td>Не забыть</td>
+                  </tr>
+                </tbody>
+              </table>
+              <table style={{ width: '90%', marginLeft: '5%' }}>
+                <tbody>
+                  <tr>
+                    <td><h3>Файлы</h3></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Document #1</Filename><Filedesc>This is my own passport, don't forget!!!</Filedesc></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Passport copy</Filename><Filedesc>This is my second passport copy just in case lol</Filedesc></td>
+                  </tr>
+                  <tr>
+                    <td><FileIcon>↓</FileIcon></td>
+                    <td><Filename>Tickets</Filename><Filedesc>Our tickets for a flight there-n-back</Filedesc></td>
+                  </tr>
+                </tbody>
+              </table>
             </Column>
           </InnerColumn>
         </LeftColumn>
-        <RightColumn>
+        { selectedCountry === null ? <RightColumnScrollable>
+          {
+            fetchedPlan.countries.map(country => {
+              return (
+                <MiniCountryCard></MiniCountryCard>
+              );
+            })
+          }
+        </RightColumnScrollable> : <RightColumn>
           <InnerColumn>
-            <Column>
-              <Row style={{ width: '90%', marginLeft: '5%', borderBottom: '1px solid rgba(0,0,0,0.1)' }}>
-                <Row style={{ justifyContent: 'flex-start', marginTop: 15, marginBottom: 3 }}>
-                  <p style={{ marginRight: 20, cursor: 'pointer', color: 'rgb(0, 158, 218)' }}>Tab 1</p>
-                  <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 2</p>
-                  <p style={{ marginRight: 20, cursor: 'pointer' }}>Tab 3</p>
-                </Row>
+            <PlaceTypes>
+              <Row>
+                <Tfilter className="typeFilter activeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'null') } }>Все места</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Hotel') } }>Отели</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Restaurant') } }>Рестораны</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Sightseeing') } }>Достопримечательности</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Photoplace') } }>Места для фото</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'Favourite') } }>Избранные</Tfilter>
+                <Tfilter className="typeFilter" style={{ paddingTop: '5px', cursor: 'pointer' }} onClick={ (e) => { filterPlacesByType(e, 'null') } }>Мои места</Tfilter>
               </Row>
-              { /* continue here */ }
-            </Column>
+            </PlaceTypes>
+            <PlaceItems>
+              <h3>{ fetchedPlan.countries[selectedCountry].cities[selectedCity].name }, { fetchedPlan.countries[selectedCountry].name }</h3>
+              <Row style={{ width: '100%' }}>
+                <CityTimeFilter days={ fetchCityDates(fetchedPlan.countries[selectedCountry].cities[selectedCity]) } filter={ filterPlacesByTime } />
+                <Column style={{ width: '85%' }}>
+                  { fetchedPlan.countries[selectedCountry].cities[selectedCity].places.map(place => {
+                      return (
+                        <>
+                          <PlaceItem>
+                            <TextSide>
+                              <small style={{ color: 'grey' }}>{ fetchFromType(place.type) } { place.type }</small>
+                              <h2 style={{ margin: 0, padding: 0, marginTop: 8, marginBottom: 8 }}>BBQ inn, Meat-o-rant</h2>
+                              <small style={{ color: 'grey' }}>В { place.arrival } | Открыто: { place.open ? `${place.open} - ${place.close}` : 'All-day' } | Меню</small>
+                              <br />
+                              <small style={{ color: 'grey' }}>Адрес: { place.address }</small>
+                              <br />
+                              <small style={{ color: 'skyblue' }}>Комментарии...</small>
+                            </TextSide>
+                            <ImageSide>
+                              <ImageSideImage src={ place.image } />
+                            </ImageSide>
+                          </PlaceItem>
+                          <br />
+                          <br />
+                        </>
+                      );
+                    })
+                  }
+                </Column>
+              </Row>
+              <br />
+              <br />
+            </PlaceItems>
           </InnerColumn>
-        </RightColumn>
+          <br />
+          <br />
+        </RightColumn> }
+        <AddMemberBar style={{ display: addMemberSelected ? 'flex' : 'none' }}>
+          <AddMemberInput id="memberUsername" type="text" placeholder="Введите юзернейм пользователя" />
+          <AddMemberButton onClick={ fetchUserAndAdd } >Добавить</AddMemberButton>
+          <CloseAddMember onClick={ handleAddMember }>x</CloseAddMember>
+        </AddMemberBar>
+        <Notification />
       </Wrap>
     )
   );
 };
 
-export default Profile;
+export default Plans;
